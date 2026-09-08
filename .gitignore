@@ -3,3 +3,9 @@
 out
 gen
 .venv
+.qoder
+.env
+db.sqlite3
+*.py[cod]
+__pycache__/
+.pytest_cache/

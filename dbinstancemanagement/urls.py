@@ -15,8 +15,48 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from app.views import (
+    ClusterViewSet,
+    DepartmentViewSet,
+    InstanceProbeView,
+    InstanceViewSet,
+    ProbeResultView,
+)
+
+router = DefaultRouter()
+router.register("departments", DepartmentViewSet, basename="department")
+router.register("clusters", ClusterViewSet, basename="cluster")
+router.register("instances", InstanceViewSet, basename="instance")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/instances/probe/", InstanceProbeView.as_view(), name="instance-probe"),
+    path(
+        "api/instances/probe/<str:task_id>/",
+        ProbeResultView.as_view(),
+        name="instance-probe-result",
+    ),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
+    path("api/", include(router.urls)),
 ]
