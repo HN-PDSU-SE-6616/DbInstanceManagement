@@ -3,6 +3,7 @@ from django.db.models import Count
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from rest_framework import status, viewsets
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,9 +14,11 @@ from .serializers import (
     DepartmentSerializer,
     InstanceSerializer,
     PortProbeSerializer,
+    ProbeTaskQuerySerializer
 )
 from .tasks import probe_port
 from .utils import check_port_reachable
+from .monitoring import metrics_snapshot
 
 
 # Create your views here.
@@ -125,6 +128,7 @@ def dashboard(request):
 
     context = {
         "probe_result": probe_result,
+        "metrics": metrics_snapshot(),
         "status_cards": status_cards,
         "db_type_cards": db_type_cards,
         "totals": {
@@ -138,3 +142,32 @@ def dashboard(request):
         ).order_by("-stat_date", "-updated_at")[:10],
     }
     return render(request, "dashboard/index.html", context)
+
+
+class InstanceProbeView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PortProbeSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        task = probe_port.delay(data["host"], data["port"], data.get("timeout", 3.0))
+        return Response(
+            {"task_id": task.id, "state": task.state},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+
+class ProbeResultView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProbeTaskQuerySerializer
+
+    def get(self, request, task_id):
+        task = probe_port.AsyncResult(task_id)
+        payload = {"task_id": task_id, "state": task.state, "ready": task.ready()}
+        if task.successful():
+            payload["reachable"] = task.result
+        elif task.ready() and task.failed():
+            payload["error"] = str(task.result)
+        return Response(payload)

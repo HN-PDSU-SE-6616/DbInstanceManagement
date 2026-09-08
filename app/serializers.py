@@ -63,3 +63,7 @@ class PortProbeSerializer(serializers.Serializer):
     timeout = serializers.FloatField(
         min_value=0.5, max_value=30.0, default=3.0, required=False
     )
+
+
+class ProbeTaskQuerySerializer(serializers.Serializer):
+    task_id = serializers.CharField(max_length=255, help_text="Celery 任务 ID")

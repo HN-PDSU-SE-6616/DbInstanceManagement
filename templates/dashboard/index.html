@@ -36,6 +36,25 @@
     </nav>
 </header>
 <main>
+    <h2>运行指标（实时快照 · 原始格式见 <a href="/metrics/">/metrics/</a>）</h2>
+    {% if metrics.available %}
+    <div class="cards">
+        <div class="card"><div class="num">{{ metrics.requests_total }}</div><div class="label">累计请求</div></div>
+        <div class="card"><div class="num">{{ metrics.avg_latency_ms|default:"-" }}</div><div class="label">平均耗时 (ms)</div></div>
+        <div class="card"><div class="num">{{ metrics.status_codes|length }}</div><div class="label">状态码种类</div></div>
+    </div>
+    <div class="form-box">
+        状态码分布：
+        {% for code, count in metrics.status_codes.items %}
+        <span class="pill">{{ code }}: {{ count }}</span>
+        {% empty %}
+        暂无请求样本，访问几次页面/API 后刷新本页
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="form-box">指标暂不可用（django-prometheus 未加载）</div>
+    {% endif %}
+
     <h2>资源总览</h2>
     <div class="cards">
         <div class="card"><div class="num">{{ totals.department }}</div><div class="label">部门</div></div>
