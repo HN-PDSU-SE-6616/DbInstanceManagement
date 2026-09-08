@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django_prometheus import exports
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -30,6 +31,7 @@ from app.views import (
     InstanceProbeView,
     InstanceViewSet,
     ProbeResultView,
+    dashboard,
 )
 
 router = DefaultRouter()
@@ -39,6 +41,8 @@ router.register("instances", InstanceViewSet, basename="instance")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("dashboard/", dashboard, name="dashboard"),
+    path("metrics/", exports.ExportToDjangoView, name="prometheus-metrics"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/instances/probe/", InstanceProbeView.as_view(), name="instance-probe"),

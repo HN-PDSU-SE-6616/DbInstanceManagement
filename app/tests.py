@@ -277,3 +277,30 @@ class ApiTests(APITestCase):
             "/api/instances/probe/", {"host": "", "port": 99999}, format="json"
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PageTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="viewer", password="Pass@123")
+
+    def test_dashboard_requires_login(self):
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_dashboard_logged_in(self):
+        self.client.login(username="viewer", password="Pass@123")
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "数据库实例管理系统")
+
+    def test_dashboard_probe_post(self):
+        self.client.login(username="viewer", password="Pass@123")
+        resp = self.client.post(
+            "/dashboard/", {"host": "", "port": 99999}, follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_metrics_endpoint(self):
+        resp = self.client.get("/metrics/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("text/plain", resp["Content-Type"])

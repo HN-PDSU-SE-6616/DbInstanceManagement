@@ -9,3 +9,9 @@ db.sqlite3
 *.py[cod]
 __pycache__/
 .pytest_cache/
+logs/
+htmlcov/
+.coverage
+coverage.xml
+celerybeat-schedule*
+*.log

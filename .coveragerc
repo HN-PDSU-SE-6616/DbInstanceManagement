@@ -1,0 +1,13 @@
+[run]
+source = app,dbinstancemanagement
+omit =
+    */migrations/*
+    */tests.py
+    */management/commands/*
+    dbinstancemanagement/asgi.py
+    dbinstancemanagement/wsgi.py
+    manage.py
+
+[report]
+show_missing = true
+skip_covered = true
