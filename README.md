@@ -18,7 +18,7 @@
 
 ```powershell
 uv sync 
-Copy-Item .env.example .env # 生成 Fernet 密钥并填入 ENCRYPTION_KEY 
+copy .env.example .env # 生成 Fernet 密钥并填入 ENCRYPTION_KEY 
 uv run python manage.py migrate 
 uv run python manage.py seed_demo # 演示数据 + 当日统计 
 uv run python manage.py createsuperuser 
@@ -65,7 +65,7 @@ Beat 静态调度（settings 内 `CELERY_BEAT_SCHEDULE`）：
 ```powershell
 uv run celery -A dbinstancemanagement worker -l info -P threads
 uv run celery -A dbinstancemanagement beat -l info
-uv run flower --broker=redis://localhost:6379/0 --result-backend=redis://localhost:6379/1 --port=5555
+uv run celery -A dbinstancemanagement flower --port=5555
 ```
 
 手动验证（无需 Worker）：
