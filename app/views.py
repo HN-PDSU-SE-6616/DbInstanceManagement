@@ -1,3 +1,4 @@
+"""视图层"""
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.shortcuts import render
@@ -24,22 +25,29 @@ from .monitoring import metrics_snapshot
 # Create your views here.
 
 class DepartmentViewSet(viewsets.ModelViewSet):
+    """部门"""
+
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = [IsAuthenticated]
 
 
 class ClusterViewSet(viewsets.ModelViewSet):
+    """集群"""
+
     queryset = Cluster.objects.all()
     serializer_class = ClusterSerializer
     permission_classes = [IsAuthenticated]
 
 
 class InstanceViewSet(viewsets.ModelViewSet):
+    """实例"""
+
     serializer_class = InstanceSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """构造实例查询集，支持参数：department（部门ID、cluster（集群ID）、status（状态值）"""
         queryset = Instance.objects.select_related("department", "cluster").all()
         department = self.request.query_params.get("department")
         cluster = self.request.query_params.get("cluster")
@@ -54,9 +62,16 @@ class InstanceViewSet(viewsets.ModelViewSet):
 
 
 class InstanceProbeView(APIView):
+    """端口探测提交接口"""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """接收 host/port/timeout，投递 probe_port 任务并返回 202 与 task_id
+
+        :param request: 请求对象
+        :Return: HTTP 202 响应
+        """
         serializer = PortProbeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -68,9 +83,17 @@ class InstanceProbeView(APIView):
 
 
 class ProbeResultView(APIView):
+    """端口探测结果"""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, task_id):
+        """查询指定探测任务的状态与结果
+
+        :param request: 请求对象
+        :param task_id: Celery 任务 UUID
+        :Return: 包含 state/ready，以及成功后 reachable 或失败 error 的响应
+        """
         task = probe_port.AsyncResult(task_id)
         payload = {"task_id": task_id, "state": task.state, "ready": task.ready()}
         if task.successful():
@@ -83,6 +106,11 @@ class ProbeResultView(APIView):
 @login_required(login_url="/admin/login/")
 @require_http_methods(["GET", "POST"])
 def dashboard(request):
+    """可视化控制台：POST 时执行端口探测，GET/POST 渲染统计卡片与最近记录。
+
+   :param request: 请求对象；POST 表单含 host 与 port。
+   :Return: 渲染 dashboard/index.html 的响应。
+   """
     probe_result = None
     if request.method == "POST":
         host = request.POST.get("host", "").strip()

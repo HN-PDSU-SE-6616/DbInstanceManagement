@@ -1,9 +1,12 @@
+"""序列化层"""
 from rest_framework import serializers
 
 from .models import Cluster, Department, Instance
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
+    """部门模型序列化器"""
+
     class Meta:
         model = Department
         fields = "__all__"
@@ -11,6 +14,8 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class ClusterSerializer(serializers.ModelSerializer):
+    """集群模型序列化器"""
+
     environment_display = serializers.CharField(
         source="get_environment_display", read_only=True
     )
@@ -22,6 +27,8 @@ class ClusterSerializer(serializers.ModelSerializer):
 
 
 class InstanceSerializer(serializers.ModelSerializer):
+    """实例序列化器"""
+
     password = serializers.CharField(
         write_only=True,
         required=False,
@@ -58,6 +65,8 @@ class InstanceSerializer(serializers.ModelSerializer):
 
 
 class PortProbeSerializer(serializers.Serializer):
+    """端口探测请求体校验"""
+
     host = serializers.CharField(max_length=255, help_text="IP 或域名")
     port = serializers.IntegerField(min_value=1, max_value=65535)
     timeout = serializers.FloatField(
@@ -66,4 +75,6 @@ class PortProbeSerializer(serializers.Serializer):
 
 
 class ProbeTaskQuerySerializer(serializers.Serializer):
+    """探测结果查询请求校验"""
+
     task_id = serializers.CharField(max_length=255, help_text="Celery 任务 ID")

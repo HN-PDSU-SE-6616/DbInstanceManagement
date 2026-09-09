@@ -1,3 +1,4 @@
+"""管理命令：手动生成某日部门×集群维度的实例统计。"""
 import datetime
 
 from django.core.management.base import BaseCommand
@@ -9,6 +10,7 @@ class Command(BaseCommand):
     help = "手动生成某日部门/集群维度的实例统计（无需 Celery）"
 
     def add_arguments(self, parser):
+        """注册命令行参数"""
         parser.add_argument(
             "--date",
             default=None,
@@ -16,6 +18,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """解析日期并执行统计任务，打印影响行数"""
         raw = options.get("date")
         stat_date = datetime.date.fromisoformat(raw) if raw else None
         affected = generate_daily_instance_stats(stat_date)

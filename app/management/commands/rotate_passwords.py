@@ -1,3 +1,4 @@
+"""管理命令：在进程内手动触发一次全量密码轮换。"""
 from django.core.management.base import BaseCommand
 
 from app.tasks import rotate_instance_passwords

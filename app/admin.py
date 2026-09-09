@@ -1,3 +1,4 @@
+"""Admin 后台配置"""
 from django.contrib import admin
 
 from .models import Cluster, Department, Instance, InstanceDailyStat
@@ -6,12 +7,16 @@ from .models import Cluster, Department, Instance, InstanceDailyStat
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
+    """部门"""
+
     list_display = ("code", "name", "description", "created_at")
     search_fields = ("name", "code")
 
 
 @admin.register(Cluster)
 class ClusterAdmin(admin.ModelAdmin):
+    """集群"""
+
     list_display = ("code", "name", "environment", "created_at")
     list_filter = ("environment",)
     search_fields = ("name", "code")
@@ -19,6 +24,8 @@ class ClusterAdmin(admin.ModelAdmin):
 
 @admin.register(Instance)
 class InstanceAdmin(admin.ModelAdmin):
+    """实例"""
+
     list_display = (
         "name",
         "host",
@@ -37,6 +44,8 @@ class InstanceAdmin(admin.ModelAdmin):
 
 @admin.register(InstanceDailyStat)
 class InstanceDailyStatAdmin(admin.ModelAdmin):
+    """每日统计"""
+
     list_display = (
         "stat_date",
         "department",

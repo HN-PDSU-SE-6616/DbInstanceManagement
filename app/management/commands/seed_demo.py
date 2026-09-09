@@ -1,3 +1,4 @@
+"""管理命令：一键生成演示数据（部门/集群/实例）并生成当日统计。"""
 from django.core.management.base import BaseCommand
 
 from app.models import Cluster, Department, Instance
@@ -8,6 +9,7 @@ class Command(BaseCommand):
     help = "生成演示数据：部门/集群/实例，并顺带生成当日统计"
 
     def handle(self, *args, **options):
+        """创建或更新演示数据并打印汇总"""
         rd, _ = Department.objects.get_or_create(code="RD", defaults={"name": "研发部"})
         fin, _ = Department.objects.get_or_create(code="FIN", defaults={"name": "财务部"})
         prod, _ = Cluster.objects.get_or_create(

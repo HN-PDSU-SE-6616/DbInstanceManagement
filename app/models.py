@@ -1,3 +1,4 @@
+"""数据模型层"""
 from datetime import date
 
 from django.db import models
@@ -7,6 +8,8 @@ from .utils import decrypt_password, encrypt_password, generate_strong_password
 
 
 class TimeStampedModel(models.Model):
+    """抽象基类：为所有业务模型统一提供 created_at / updated_at 自动时间戳。"""
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -15,6 +18,8 @@ class TimeStampedModel(models.Model):
 
 
 class Department(TimeStampedModel):
+    """部门"""
+
     name = models.CharField(max_length=128)
     code = models.CharField(max_length=64, unique=True)
     description = models.CharField(max_length=255, blank=True, default="")
@@ -28,7 +33,10 @@ class Department(TimeStampedModel):
 
 
 class Cluster(TimeStampedModel):
+    """集群"""
+
     class Environment(models.TextChoices):
+        """集群环境枚举"""
         DEVELOPMENT = "dev", "开发"
         TEST = "test", "测试"
         PRODUCTION = "prod", "生产"
@@ -49,7 +57,10 @@ class Cluster(TimeStampedModel):
 
 
 class Instance(TimeStampedModel):
+    """数据库实例"""
+
     class DbType(models.TextChoices):
+        """数据库类型枚举"""
         POSTGRESQL = "postgresql", "PostgreSQL"
         MYSQL = "mysql", "MySQL"
         REDIS = "redis", "Redis"
@@ -59,6 +70,7 @@ class Instance(TimeStampedModel):
         OTHER = "other", "其他"
 
     class Status(models.TextChoices):
+        """实例运行状态枚举"""
         ACTIVE = "active", "运行中"
         MAINTENANCE = "maintenance", "维护中"
         INACTIVE = "inactive", "已停用"
@@ -103,17 +115,20 @@ class Instance(TimeStampedModel):
         self._password = encrypt_password(value)
 
     def save(self, *args, **kwargs):
+        """在保存前兜底：若未设置密码则自动生成随机强密码（默认安全）"""
         if not self._password:
             self.password = generate_strong_password()
         super().save(*args, **kwargs)
 
     def rotate_password(self) -> None:
+        """轮换口令：生成随机强密码加密入库，并刷新 last_password_rotate 时间戳。"""
         self.password = generate_strong_password()
         self.last_password_rotate = timezone.now()
         self.save(update_fields=["_password", "last_password_rotate", "updated_at"])
 
 
 class InstanceDailyStat(models.Model):
+    """实例每日统计快照"""
     stat_date = models.DateField(default=date.today, db_index=True)
     department = models.ForeignKey(
         Department, on_delete=models.PROTECT, related_name="daily_stats"

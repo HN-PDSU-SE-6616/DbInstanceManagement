@@ -1,3 +1,4 @@
+"""中间件层"""
 import logging
 import time
 
@@ -5,10 +6,17 @@ logger = logging.getLogger("app.access")
 
 
 class RequestTimingMiddleware:
+    """请求计时中间件"""
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        """处理请求：计时、调用后续处理、写响应头与访问日志。
+
+        :param request: 请求对象。
+        :Return: HttpResponse。
+        """
         start = time.perf_counter()
         response = self.get_response(request)
         duration_ms = (time.perf_counter() - start) * 1000

@@ -1,3 +1,4 @@
+"""观测层：读取 Prometheus 注册表并输出人可读的运行指标快照"""
 import logging
 
 from prometheus_client import REGISTRY, generate_latest
@@ -14,6 +15,7 @@ _STATUS_FAMILY = "django_http_responses_total_by_status_code"
 
 
 def _collect():
+    """导出 Prometheus 注册表文本并按指标族名组织样本"""
     families = {}
     try:
         text = generate_latest(REGISTRY).decode("utf-8")
@@ -25,6 +27,7 @@ def _collect():
 
 
 def metrics_snapshot():
+    """汇总核心运行指标供页面展示"""
     snapshot = {
         "available": False,
         "requests_total": 0,
